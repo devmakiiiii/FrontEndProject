@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuction } from '@/lib/auction-context';
+import { useCountdown } from '@/hooks/use-countdown';
 import { BidForm } from '@/components/bid-form';
 import { BidHistory } from '@/components/bid-history';
 import { Card } from '@/components/ui/card';
@@ -36,7 +37,7 @@ export default function AuctionDetailPage() {
     );
   }
 
-  const timeLeft = Math.ceil((auction.endTime.getTime() - Date.now()) / (1000 * 60 * 60));
+  const { formattedTime, isEnded } = useCountdown(auction.endTime);
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-12 space-y-8">
@@ -66,7 +67,7 @@ export default function AuctionDetailPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Time Left</span>
-                <span className="font-semibold">{timeLeft}h</span>
+                <span className="font-semibold">{formattedTime}</span>
               </div>
             </div>
           </Card>
@@ -106,7 +107,7 @@ export default function AuctionDetailPage() {
           </Card>
 
           {/* Bid Form */}
-          {auction.status === 'active' && (
+          {auction.status === 'active' && !isEnded && (
             <BidForm
               auction={auction}
               onBidSuccess={() => setRefreshKey(prev => prev + 1)}

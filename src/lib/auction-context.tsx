@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Auction, Bid, User, mockAuctions, mockBids, mockUsers } from './mock-data';
+import { toast } from 'sonner';
 
 interface AuctionContextType {
   auctions: Auction[];
@@ -10,6 +11,7 @@ interface AuctionContextType {
   signup: (name: string, email: string, password: string) => boolean;
   logout: () => void;
   placeBid: (auctionId: string, amount: number) => boolean;
+  createAuction: (auctionData: Omit<Auction, 'id' | 'currentBid' | 'bidCount' | 'status' | 'endTime' | 'seller' | 'sellerId'> & { duration: number }) => boolean;
   getBidsForAuction: (auctionId: string) => Bid[];
   getUserListings: () => Auction[];
   getUserBids: () => Bid[];
@@ -25,6 +27,21 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   const [registeredUsers, setRegisteredUsers] = useState<Record<string, { email: string; password: string; user: User }>>({
     'john@example.com': { email: 'john@example.com', password: 'password', user: mockUsers['current'] },
   });
+
+  // Automatically end auctions when time expires
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setAuctions(prev => prev.map(auction => {
+        if (auction.status === 'active' && auction.endTime.getTime() <= now) {
+          return { ...auction, status: 'ended' };
+        }
+        return auction;
+      }));
+    }, 1000); // Check every second
+
+    return () => clearInterval(interval);
+  }, []);
 
   const login = (email: string, password: string): boolean => {
     const user = registeredUsers[email];
@@ -88,6 +105,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       [auctionId]: [...(prev[auctionId] || []), newBid],
     }));
 
+    toast.success(`Bid of $${amount} placed successfully!`);
     return true;
   };
 
@@ -112,6 +130,29 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     );
   };
 
+  const createAuction = (auctionData: Omit<Auction, 'id' | 'currentBid' | 'bidCount' | 'status' | 'endTime' | 'seller' | 'sellerId'> & { duration: number }): boolean => {
+    if (!currentUser) return false;
+
+    const newAuction: Auction = {
+      id: `auction-${Date.now()}`,
+      title: auctionData.title,
+      description: auctionData.description,
+      category: auctionData.category,
+      currentBid: auctionData.startingBid,
+      startingBid: auctionData.startingBid,
+      image: auctionData.image,
+      seller: currentUser.name,
+      sellerId: currentUser.id,
+      endTime: new Date(Date.now() + auctionData.duration * 60 * 60 * 1000),
+      status: 'active',
+      bidCount: 0,
+    };
+
+    setAuctions(prev => [...prev, newAuction]);
+    toast.success('Auction created successfully!');
+    return true;
+  };
+
   return (
     <AuctionContext.Provider value={{
       auctions,
@@ -122,6 +163,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       signup,
       logout,
       placeBid,
+      createAuction,
       getBidsForAuction,
       getUserListings,
       getUserBids,

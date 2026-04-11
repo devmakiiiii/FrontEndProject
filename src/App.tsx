@@ -9,6 +9,8 @@ import MyListingsPage from '@/pages/my-listings';
 import MyBidsPage from '@/pages/my-bids';
 import ProfilePage from '@/pages/profile';
 import './index.css';
+import CreateAuctionPage from './pages/create-auction';
+import { Toaster } from '@/components/ui/sonner';
 
 function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
@@ -36,8 +38,10 @@ function App() {
             <Route path="/my-bids" element={<MyBidsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="/create-auction" element={<CreateAuctionPage />} />
           </Routes>
         </Layout>
+        <Toaster />
       </AuctionProvider>
     </BrowserRouter>
   );

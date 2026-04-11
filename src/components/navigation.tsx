@@ -37,6 +37,16 @@ export function Navigation() {
                 Browse
               </Link>
               <Link
+                to="/create-auction"
+                className={`text-sm font-medium transition-colors ${
+                  isActive('/create-auction')
+                    ? 'text-primary'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                Create Auction
+              </Link>
+              <Link
                 to="/my-listings"
                 className={`text-sm font-medium transition-colors ${
                   isActive('/my-listings')
