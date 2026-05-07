@@ -16,11 +16,8 @@ export function Navigation() {
   return (
     <nav className="sticky top-0 z-50 bg-background border-b border-border">
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <span className="text-primary-foreground text-sm font-bold">⚡</span>
-          </div>
-          <span className="text-xl font-bold hidden sm:inline">Auction Pro</span>
+        <Link to="/" className="text-xl font-bold">
+          Bidly
         </Link>
 
         <div className="flex items-center gap-6">
