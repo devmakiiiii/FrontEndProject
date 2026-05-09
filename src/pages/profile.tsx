@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuction } from '@/lib/auction-context';
 import { Card } from '@/components/ui/card';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { currentUser, isAuthenticated, getUserListings, getUserBids, logout } = useAuction();
+  const [bidsCount, setBidsCount] = useState(0);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -14,12 +15,22 @@ export default function ProfilePage() {
     }
   }, [isAuthenticated, navigate]);
 
+  useEffect(() => {
+    const loadBidsCount = async () => {
+      if (currentUser && isAuthenticated) {
+        const bids = await getUserBids();
+        setBidsCount(bids.length);
+      }
+    };
+    loadBidsCount();
+  }, [currentUser, isAuthenticated]);
+
   if (!isAuthenticated || !currentUser) {
     return null;
   }
 
   const listings = getUserListings();
-  const bids = getUserBids();
+  const fullName = `${currentUser.firstname} ${currentUser.lastname}`;
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-12">
@@ -32,22 +43,18 @@ export default function ProfilePage() {
               {currentUser.avatar}
             </div>
             <div>
-              <h2 className="text-2xl font-bold">{currentUser.name}</h2>
+              <h2 className="text-2xl font-bold">{fullName}</h2>
               <p className="text-muted-foreground">{currentUser.email}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4 pt-4 border-t">
             <div className="text-center">
-              <p className="text-2xl font-bold text-primary">{currentUser.reputation}</p>
-              <p className="text-sm text-muted-foreground">Reputation</p>
-            </div>
-            <div className="text-center">
               <p className="text-2xl font-bold text-primary">{listings.length}</p>
               <p className="text-sm text-muted-foreground">Listings</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-primary">{bids.length}</p>
+              <p className="text-2xl font-bold text-primary">{bidsCount}</p>
               <p className="text-sm text-muted-foreground">Bids</p>
             </div>
           </div>

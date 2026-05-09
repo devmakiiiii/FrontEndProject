@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuction } from '@/lib/auction-context';
 import { useForm } from 'react-hook-form';
@@ -14,59 +14,56 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 const createAuctionSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
   description: z.string().min(20, 'Description must be at least 20 characters'),
-  category: z.string().min(1, 'Please select a category'),
-  startingBid: z.number().min(1, 'Starting bid must be at least $1'),
-  duration: z.number().min(1, 'Duration must be at least 1 hour'),
-  image: z.string().url('Please provide a valid image URL'),
+  category_id: z.string().min(1, 'Please select a category'),
+  starting_price: z.number().min(1, 'Starting price must be at least $1'),
+  end_time: z.string().min(1, 'End time is required'),
 });
 
 type CreateAuctionForm = z.infer<typeof createAuctionSchema>;
 
 const categories = [
-  'Collectibles',
-  'Jewelry & Watches',
-  'Furniture',
-  'Books & Media',
-  'Music & Audio',
-  'Fashion & Accessories',
-  'Electronics',
-  'Art & Antiques',
-  'Sports & Hobbies',
-  'Other'
+  { id: '1', name: 'Collectibles' },
+  { id: '2', name: 'Jewelry & Watches' },
+  { id: '3', name: 'Furniture' },
+  { id: '4', name: 'Books & Media' },
+  { id: '5', name: 'Music & Audio' },
+  { id: '6', name: 'Fashion & Accessories' },
+  { id: '7', name: 'Electronics' },
+  { id: '8', name: 'Art & Antiques' },
+  { id: '9', name: 'Sports & Hobbies' },
 ];
 
 export default function CreateAuctionPage() {
   const navigate = useNavigate();
-  const { createAuction, isAuthenticated } = useAuction();
+  const { createAuction, isAuthenticated, refreshAuctions } = useAuction();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isAuthenticated, navigate]);
 
   const form = useForm<CreateAuctionForm>({
     resolver: zodResolver(createAuctionSchema),
     defaultValues: {
       title: '',
       description: '',
-      category: '',
-      startingBid: 1,
-      duration: 24,
-      image: '',
+      category_id: '',
+      starting_price: 1,
+      end_time: '',
     },
   });
-
-  if (!isAuthenticated) {
-    navigate('/login');
-    return null;
-  }
 
   const onSubmit = async (data: CreateAuctionForm) => {
     setIsSubmitting(true);
     try {
-      const success = createAuction({
+      const success = await createAuction({
         title: data.title,
         description: data.description,
-        category: data.category,
-        startingBid: data.startingBid,
-        duration: data.duration,
-        image: data.image,
+        category_id: data.category_id,
+        starting_price: data.starting_price,
+        end_time: data.end_time,
       });
       if (success) {
         navigate('/my-listings');
@@ -77,6 +74,11 @@ export default function CreateAuctionPage() {
       setIsSubmitting(false);
     }
   };
+
+  // Set default end time to 24 hours from now
+  const defaultEndTime = new Date();
+  defaultEndTime.setHours(defaultEndTime.getHours() + 24);
+  const defaultEndTimeValue = defaultEndTime.toISOString().slice(0, 16);
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-12">
@@ -123,7 +125,7 @@ export default function CreateAuctionPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
-                name="category"
+                name="category_id"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
@@ -135,7 +137,7 @@ export default function CreateAuctionPage() {
                       </FormControl>
                       <SelectContent>
                         {categories.map(category => (
-                          <SelectItem key={category} value={category}>{category}</SelectItem>
+                          <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -146,10 +148,10 @@ export default function CreateAuctionPage() {
 
               <FormField
                 control={form.control}
-                name="startingBid"
+                name="starting_price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Starting Bid ($)</FormLabel>
+                    <FormLabel>Starting Price ($)</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
@@ -166,46 +168,22 @@ export default function CreateAuctionPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="duration"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Duration (hours)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="1"
-                        max="168"
-                        placeholder="24"
-                        {...field}
-                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="image"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Image URL</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="url"
-                        placeholder="https://example.com/image.jpg"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="end_time"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>End Time</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="datetime-local"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="flex gap-4">
               <Button type="submit" disabled={isSubmitting}>

@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { useAuction } from '@/lib/auction-context';
+import { Bid } from '@/lib/mock-data';
 import { Card } from '@/components/ui/card';
 
 interface BidHistoryProps {
@@ -7,8 +9,12 @@ interface BidHistoryProps {
 
 export function BidHistory({ auctionId }: BidHistoryProps) {
   const { getBidsForAuction } = useAuction();
-  const bids = getBidsForAuction(auctionId);
+  const [bids, setBids] = useState<Bid[]>([]);
   const sortedBids = [...bids].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+
+  useEffect(() => {
+    getBidsForAuction(auctionId).then(setBids);
+  }, [auctionId, getBidsForAuction]);
 
   const formatTime = (date: Date) => {
     const now = Date.now();

@@ -9,7 +9,7 @@ export interface Auction {
   seller: string;
   sellerId: string;
   endTime: Date;
-  status: 'active' | 'ended' | 'pending';
+  status: 'active' | 'ended' | 'sold' | 'pending';
   bidCount: number;
 }
 
@@ -24,41 +24,46 @@ export interface Bid {
 
 export interface User {
   id: string;
-  name: string;
+  firstname: string;
+  lastname: string;
   email: string;
+  role: string;
   avatar: string;
-  reputation: number;
 }
 
-// Mock users
+// Mock users (kept for reference, not used in production)
 export const mockUsers: Record<string, User> = {
   'user-1': {
     id: 'user-1',
-    name: 'John Collector',
+    firstname: 'John',
+    lastname: 'Collector',
     email: 'john@example.com',
     avatar: 'JC',
-    reputation: 98,
+    role: 'user',
   },
   'user-2': {
     id: 'user-2',
-    name: 'Sarah Smith',
+    firstname: 'Sarah',
+    lastname: 'Smith',
     email: 'sarah@example.com',
     avatar: 'SS',
-    reputation: 95,
+    role: 'user',
   },
   'user-3': {
     id: 'user-3',
-    name: 'Mike Johnson',
+    firstname: 'Mike',
+    lastname: 'Johnson',
     email: 'mike@example.com',
     avatar: 'MJ',
-    reputation: 87,
+    role: 'user',
   },
   'current': {
     id: 'current',
-    name: 'You',
+    firstname: 'You',
+    lastname: '',
     email: 'you@example.com',
     avatar: 'YU',
-    reputation: 92,
+    role: 'user',
   },
 };
 

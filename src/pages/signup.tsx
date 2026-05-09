@@ -4,21 +4,43 @@ import { useAuction } from '@/lib/auction-context';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 
+function validatePassword(password: string): string | null {
+  if (password.length < 8) {
+    return 'Password must be at least 8 characters';
+  }
+  if (!/[A-Z]/.test(password)) {
+    return 'Password must contain at least one uppercase letter';
+  }
+  if (!/[a-z]/.test(password)) {
+    return 'Password must contain at least one lowercase letter';
+  }
+  if (!/\d/.test(password)) {
+    return 'Password must contain at least one number';
+  }
+  if (!/[@$!%*?&]/.test(password)) {
+    return 'Password must contain at least one special character (@$!%*?&)';
+  }
+  return null;
+}
+
 export default function SignupPage() {
   const navigate = useNavigate();
   const { signup } = useAuction();
-  const [name, setName] = useState('');
+  const [firstname, setFirstname] = useState('');
+  const [lastname, setLastname] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [mobilenumber, setMobilenumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    if (!name || !email || !password || !confirmPassword) {
+    if (!firstname || !lastname || !username || !email || !password || !confirmPassword || !mobilenumber) {
       setError('Please fill in all fields');
       return;
     }
@@ -28,21 +50,33 @@ export default function SignupPage() {
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      if (signup(name, email, password)) {
-        navigate('/');
-      } else {
-        setError('Email already exists');
-        setIsSubmitting(false);
+    try {
+      const success = await signup({
+        firstname,
+        lastname,
+        username,
+        email,
+        password,
+        confirmpassword: confirmPassword,
+        mobilenumber,
+      });
+      if (success) {
+        navigate('/login');
       }
-    }, 500);
+    } catch (err: any) {
+      console.error('Signup error:', err);
+      setError(err?.data?.error || err?.message || 'An error occurred. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -81,14 +115,38 @@ export default function SignupPage() {
             </div>
           )}
 
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">First Name</label>
+              <input
+                type="text"
+                value={firstname}
+                onChange={(e) => setFirstname(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md text-sm"
+                placeholder="John"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Last Name</label>
+              <input
+                type="text"
+                value={lastname}
+                onChange={(e) => setLastname(e.target.value)}
+                className="w-full px-3 py-2 border rounded-md text-sm"
+                placeholder="Doe"
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <label className="text-sm font-medium">Full Name</label>
+            <label className="text-sm font-medium">Username</label>
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="w-full px-3 py-2 border rounded-md text-sm"
-              placeholder="John Doe"
+              placeholder="johndoe"
             />
           </div>
 
@@ -104,6 +162,17 @@ export default function SignupPage() {
           </div>
 
           <div className="space-y-2">
+            <label className="text-sm font-medium">Mobile Number</label>
+            <input
+              type="tel"
+              value={mobilenumber}
+              onChange={(e) => setMobilenumber(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md text-sm"
+              placeholder="+1234567890"
+            />
+          </div>
+
+          <div className="space-y-2">
             <label className="text-sm font-medium">Password</label>
             <input
               type="password"
@@ -112,6 +181,9 @@ export default function SignupPage() {
               className="w-full px-3 py-2 border rounded-md text-sm"
               placeholder="••••••••"
             />
+            <p className="text-xs text-muted-foreground">
+              Must be 8+ chars with uppercase, lowercase, number, and special character
+            </p>
           </div>
 
           <div className="space-y-2">

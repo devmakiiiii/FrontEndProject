@@ -49,23 +49,25 @@ export function BidForm({ auction, onBidSuccess }: BidFormProps) {
     setShowConfirmation(true);
   };
 
-  const handleConfirmBid = () => {
+  const handleConfirmBid = async () => {
     setIsSubmitting(true);
-    
-    // Simulate small delay for better UX
-    setTimeout(() => {
-      if (placeBid(auction.id, pendingBidAmount)) {
+
+    try {
+      const success = await placeBid(auction.id, pendingBidAmount);
+      if (success) {
         setSuccess(`Bid placed for $${pendingBidAmount}!`);
         setBidAmount('');
         setPendingBidAmount(0);
         setShowConfirmation(false);
-        setIsSubmitting(false);
         onBidSuccess?.();
       } else {
         setError('Failed to place bid. Please try again.');
-        setIsSubmitting(false);
       }
-    }, 500);
+    } catch (err) {
+      setError('Failed to place bid. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

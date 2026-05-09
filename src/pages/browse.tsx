@@ -1,5 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useMemo } from 'react';
 import { useAuction } from '@/lib/auction-context';
 import { AuctionGrid } from '@/components/auction-grid';
 import { Input } from '@/components/ui/input';
@@ -7,21 +6,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card } from '@/components/ui/card';
 
 export default function BrowsePage() {
-  const navigate = useNavigate();
-  const { auctions, isAuthenticated } = useAuction();
+  const { auctions, isLoading } = useAuction();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('active');
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isAuthenticated, navigate]);
-
-  if (!isAuthenticated) {
-    return null;
-  }
 
   const categories = useMemo(() => {
     const uniqueCategories = [...new Set(auctions.map(a => a.category))];
@@ -31,12 +19,20 @@ export default function BrowsePage() {
   const filteredAuctions = useMemo(() => {
     return auctions.filter(auction => {
       const matchesSearch = auction.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          auction.description.toLowerCase().includes(searchTerm.toLowerCase());
+                            auction.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = categoryFilter === 'all' || auction.category === categoryFilter;
       const matchesStatus = statusFilter === 'all' || auction.status === statusFilter;
       return matchesSearch && matchesCategory && matchesStatus;
     });
   }, [auctions, searchTerm, categoryFilter, statusFilter]);
+
+  if (isLoading) {
+    return (
+      <main className="max-w-7xl mx-auto px-4 py-12">
+        <div className="text-center py-12">Loading auctions...</div>
+      </main>
+    );
+  }
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-12">

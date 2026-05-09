@@ -1,23 +1,21 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuction } from '@/lib/auction-context';
+import { Bid } from '@/lib/mock-data';
 import { Card } from '@/components/ui/card';
 
 export default function MyBidsPage() {
   const navigate = useNavigate();
   const { isAuthenticated, getUserBids, auctions } = useAuction();
+  const [bids, setBids] = useState<Bid[]>([]);
 
   useEffect(() => {
     if (!isAuthenticated) {
       navigate('/login');
     }
-  }, [isAuthenticated, navigate]);
+    getUserBids().then(setBids);
+  }, [isAuthenticated, getUserBids]);
 
-  if (!isAuthenticated) {
-    return null;
-  }
-
-  const bids = getUserBids();
   const sortedBids = [...bids].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
   const formatTime = (date: Date) => {
@@ -32,6 +30,10 @@ export default function MyBidsPage() {
     const days = Math.floor(hours / 24);
     return `${days}d ago`;
   };
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-12">

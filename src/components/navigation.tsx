@@ -13,6 +13,8 @@ export function Navigation() {
     return false;
   };
 
+  const isAdmin = currentUser?.role === 'admin';
+
   return (
     <nav className="sticky top-0 z-50 bg-background border-b border-border">
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -63,6 +65,18 @@ export function Navigation() {
               >
                 My Bids
               </Link>
+              {isAdmin && (
+                <Link
+                  to="/admin"
+                  className={`text-sm font-medium transition-colors ${
+                    isActive('/admin')
+                      ? 'text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  Admin
+                </Link>
+              )}
             </>
           )}
 
@@ -79,7 +93,7 @@ export function Navigation() {
                 <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground">
                   {currentUser?.avatar}
                 </div>
-                <span className="hidden sm:inline">{currentUser?.name.split(' ')[0]}</span>
+                <span className="hidden sm:inline">{currentUser?.firstname?.split(' ')[0] || ''}</span>
               </Link>
               <Button
                 variant="outline"

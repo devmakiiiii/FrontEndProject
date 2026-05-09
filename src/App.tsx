@@ -8,6 +8,7 @@ import AuctionDetailPage from '@/pages/auction-detail';
 import MyListingsPage from '@/pages/my-listings';
 import MyBidsPage from '@/pages/my-bids';
 import ProfilePage from '@/pages/profile';
+import AdminPage from '@/pages/admin';
 import './index.css';
 import CreateAuctionPage from './pages/create-auction';
 import { Toaster } from '@/components/ui/sonner';
@@ -37,6 +38,7 @@ function App() {
             <Route path="/my-listings" element={<MyListingsPage />} />
             <Route path="/my-bids" element={<MyBidsPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/admin" element={<AdminPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
             <Route path="/create-auction" element={<CreateAuctionPage />} />
           </Routes>
