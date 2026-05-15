@@ -3,6 +3,7 @@ import { AuctionProvider } from '@/lib/auction-context';
 import { Navigation } from '@/components/navigation';
 import LoginPage from '@/pages/login';
 import SignupPage from '@/pages/signup';
+import LandingPage from '@/pages/landing';
 import BrowsePage from '@/pages/browse';
 import AuctionDetailPage from '@/pages/auction-detail';
 import MyListingsPage from '@/pages/my-listings';
@@ -15,8 +16,8 @@ import { Toaster } from '@/components/ui/sonner';
 
 function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-  const showNavigation = !['/login', '/signup'].includes(location.pathname);
-  
+  const showNavigation = !['/login', '/signup', '/'].includes(location.pathname);
+
   return (
     <>
       {showNavigation && <Navigation />}
@@ -33,7 +34,8 @@ function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
-            <Route path="/" element={<BrowsePage />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/browse" element={<BrowsePage />} />
             <Route path="/auction/:id" element={<AuctionDetailPage />} />
             <Route path="/my-listings" element={<MyListingsPage />} />
             <Route path="/my-bids" element={<MyBidsPage />} />

@@ -22,7 +22,6 @@ export default function AdminPage() {
   const navigate = useNavigate();
   const { currentUser, isAuthenticated, auctions } = useAuction();
   const [users, setUsers] = useState<AdminUser[]>([]);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -36,15 +35,12 @@ export default function AdminPage() {
     fetchUsers();
   }, [isAuthenticated, currentUser, navigate]);
 
-  const fetchUsers = async () => {
-    setLoading(true);
+const fetchUsers = async () => {
     try {
       const usersData = await api.getAllUsers();
       setUsers(usersData.users);
     } catch (error: any) {
       toast.error('Failed to load users');
-    } finally {
-      setLoading(false);
     }
   };
 

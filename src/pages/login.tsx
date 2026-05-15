@@ -25,9 +25,9 @@ export default function LoginPage() {
 
     try {
       const success = await login(username, password);
-      if (success) {
-        navigate('/');
-      } else {
+if (success) {
+         navigate('/browse');
+       } else {
         setError('Invalid username or password');
       }
     } catch (err) {

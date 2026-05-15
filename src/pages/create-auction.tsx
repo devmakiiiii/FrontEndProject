@@ -17,6 +17,7 @@ const createAuctionSchema = z.object({
   category_id: z.string().min(1, 'Please select a category'),
   starting_price: z.number().min(1, 'Starting price must be at least $1'),
   end_time: z.string().min(1, 'End time is required'),
+  images: z.array(z.instanceof(File)).optional(),
 });
 
 type CreateAuctionForm = z.infer<typeof createAuctionSchema>;
@@ -35,7 +36,7 @@ const categories = [
 
 export default function CreateAuctionPage() {
   const navigate = useNavigate();
-  const { createAuction, isAuthenticated, refreshAuctions } = useAuction();
+  const { createAuction, isAuthenticated } = useAuction();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -52,6 +53,7 @@ export default function CreateAuctionPage() {
       category_id: '',
       starting_price: 1,
       end_time: '',
+      images: [],
     },
   });
 
@@ -64,6 +66,7 @@ export default function CreateAuctionPage() {
         category_id: data.category_id,
         starting_price: data.starting_price,
         end_time: data.end_time,
+        images: data.images,
       });
       if (success) {
         navigate('/my-listings');
@@ -74,11 +77,6 @@ export default function CreateAuctionPage() {
       setIsSubmitting(false);
     }
   };
-
-  // Set default end time to 24 hours from now
-  const defaultEndTime = new Date();
-  defaultEndTime.setHours(defaultEndTime.getHours() + 24);
-  const defaultEndTimeValue = defaultEndTime.toISOString().slice(0, 16);
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-12">
@@ -166,7 +164,7 @@ export default function CreateAuctionPage() {
                   </FormItem>
                 )}
               />
-            </div>
+</div>
 
             <FormField
               control={form.control}
@@ -178,6 +176,25 @@ export default function CreateAuctionPage() {
                     <Input
                       type="datetime-local"
                       {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="images"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Images</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => field.onChange(e.target.files ? Array.from(e.target.files) : [])}
                     />
                   </FormControl>
                   <FormMessage />

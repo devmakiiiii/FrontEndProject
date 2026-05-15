@@ -26,17 +26,16 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  if (!(options.body instanceof FormData)) {
+  const opts = { ...options, headers };
+  
+  if (!(opts.body instanceof FormData)) {
     headers['Content-Type'] = 'application/json';
-    if (options.body && typeof options.body === 'object') {
-      options.body = JSON.stringify(options.body);
+    if (opts.body && typeof opts.body === 'object') {
+      opts.body = JSON.stringify(opts.body);
     }
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    ...options,
-    headers,
-  });
+  const response = await fetch(`${API_BASE}${endpoint}`, opts);
 
   if (!response.ok) {
     const error: ApiError = new Error('API request failed');
@@ -64,7 +63,7 @@ export const api = {
   login: (username: string, password: string) =>
     request<{ token: string }>('/api/login', {
       method: 'POST',
-      body: { username, password },
+      body: { username, password } as any,
     }),
 
   signup: (data: {
@@ -78,7 +77,7 @@ export const api = {
   }) =>
     request<{ message: string }>('/api/signup', {
       method: 'POST',
-      body: data,
+      body: data as any,
     }),
 
   logout: () =>
@@ -110,7 +109,7 @@ export const api = {
   placeBid: (auctionId: string, bidAmount: number) =>
     request<{ message: string }>(`/api/auction/${auctionId}/bid`, {
       method: 'POST',
-      body: { bid_amount: bidAmount },
+      body: { bid_amount: bidAmount } as any,
     }),
 
   getAllUsers: () =>

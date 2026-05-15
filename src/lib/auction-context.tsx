@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Auction, Bid, User } from './mock-data';
 import { api } from './api';
 import { toast } from 'sonner';
@@ -77,7 +77,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       try {
         const profile = await api.getProfile();
         setCurrentUser({
-          id: profile.id,
+          id: String(profile.id),
           firstname: profile.firstname,
           lastname: profile.lastname,
           email: profile.email,
@@ -86,6 +86,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
         });
       } catch (error) {
         api.removeToken();
+        setCurrentUser(null);
       }
       setIsLoading(false);
     };
@@ -113,7 +114,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
       api.setToken(response.token);
       const profile = await api.getProfile();
       setCurrentUser({
-        id: profile.id,
+        id: String(profile.id),
         firstname: profile.firstname,
         lastname: profile.lastname,
         email: profile.email,

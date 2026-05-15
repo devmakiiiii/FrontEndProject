@@ -56,25 +56,24 @@ export function AuctionCard({ auction }: AuctionCardProps) {
     setShowConfirmation(true);
   };
 
-  const handleConfirmBid = () => {
+  const handleConfirmBid = async () => {
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      if (placeBid(auction.id, pendingBidAmount)) {
-        setSuccess(`Bid placed for $${pendingBidAmount}!`);
-        setBidAmount('');
-        setError('');
-        setShowConfirmation(false);
-        setShowBidModal(false);
-        setIsSubmitting(false);
-        setPendingBidAmount(0);
+    const success = await placeBid(auction.id, pendingBidAmount);
+    if (success) {
+      setSuccess(`Bid placed for $${pendingBidAmount}!`);
+      setBidAmount('');
+      setError('');
+      setShowConfirmation(false);
+      setShowBidModal(false);
+      setIsSubmitting(false);
+      setPendingBidAmount(0);
 
-        setTimeout(() => setSuccess(''), 2000);
-      } else {
-        setError('Failed to place bid. Please try again.');
-        setIsSubmitting(false);
-      }
-    }, 500);
+      setTimeout(() => setSuccess(''), 2000);
+    } else {
+      setError('Failed to place bid. Please try again.');
+      setIsSubmitting(false);
+    }
   };
 
   return (
