@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { Auction } from '@/lib/mock-data';
+import { Auction } from '@/lib/types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuction } from '@/lib/auction-context';
@@ -80,12 +80,15 @@ export function AuctionCard({ auction }: AuctionCardProps) {
     <>
     <Link to={`/auction/${auction.id}`}>
       <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full">
-        <div className="aspect-square overflow-hidden bg-muted">
-          <img
-            src={auction.image}
-            alt={auction.title}
-            className="w-full h-full object-cover hover:scale-105 transition-transform"
-          />
+<div className="aspect-square overflow-hidden bg-muted">
+<img
+              src={auction.image || 'https://placehold.co/400x400?text=No+Image'}
+              alt={auction.title}
+              className="w-full h-full object-cover hover:scale-105 transition-transform"
+              onError={(e) => {
+                e.currentTarget.src = 'https://placehold.co/400x400?text=No+Image';
+              }}
+            />
         </div>
 
         <div className="p-4 flex flex-col gap-3">

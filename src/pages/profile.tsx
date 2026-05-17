@@ -6,14 +6,14 @@ import { Button } from '@/components/ui/button';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { currentUser, isAuthenticated, getUserListings, getUserBids, logout } = useAuction();
+  const { currentUser, isAuthenticated, isLoading, getUserListings, getUserBids, logout } = useAuction();
   const [bidsCount, setBidsCount] = useState(0);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       navigate('/login');
     }
-  }, [isAuthenticated, navigate]);
+  }, [isLoading, isAuthenticated, navigate]);
 
   useEffect(() => {
     const loadBidsCount = async () => {

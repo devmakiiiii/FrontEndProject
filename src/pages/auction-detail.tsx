@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 export default function AuctionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { auctions, isAuthenticated } = useAuction();
+  const { auctions, isAuthenticated, currentUser } = useAuction();
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
@@ -46,12 +46,15 @@ export default function AuctionDetailPage() {
       <div key={refreshKey} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Image Section */}
         <div className="lg:col-span-1 space-y-4">
-          <Card className="overflow-hidden">
-            <img
-              src={auction.image}
-              alt={auction.title}
-              className="w-full aspect-square object-cover"
-            />
+<Card className="overflow-hidden">
+<img
+                src={auction.image || 'https://placehold.co/600x600?text=No+Image'}
+                alt={auction.title}
+                className="w-full aspect-square object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://placehold.co/600x600?text=No+Image';
+                }}
+              />
           </Card>
 
           {/* Status */}
@@ -107,12 +110,12 @@ export default function AuctionDetailPage() {
           </Card>
 
           {/* Bid Form */}
-          {auction.status === 'active' && !isEnded && (
-            <BidForm
-              auction={auction}
-              onBidSuccess={() => setRefreshKey(prev => prev + 1)}
-            />
-          )}
+{auction.status === 'active' && !isEnded && currentUser?.id !== auction.sellerId && (
+    <BidForm
+      auction={auction}
+      onBidSuccess={() => setRefreshKey(prev => prev + 1)}
+    />
+  )}
 
           {/* Bid History */}
           <BidHistory auctionId={auction.id} />

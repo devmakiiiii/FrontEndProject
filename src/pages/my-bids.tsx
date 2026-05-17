@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuction } from '@/lib/auction-context';
-import { Bid } from '@/lib/mock-data';
+import { Bid } from '@/lib/types';
 import { Card } from '@/components/ui/card';
 
 export default function MyBidsPage() {
   const navigate = useNavigate();
-  const { isAuthenticated, getUserBids, auctions } = useAuction();
+  const { isAuthenticated, isLoading, getUserBids, auctions } = useAuction();
   const [bids, setBids] = useState<Bid[]>([]);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       navigate('/login');
     }
-    getUserBids().then(setBids);
-  }, [isAuthenticated, getUserBids]);
+    if (isAuthenticated) {
+      getUserBids().then(setBids);
+    }
+  }, [isLoading, isAuthenticated, getUserBids]);
 
   const sortedBids = [...bids].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 

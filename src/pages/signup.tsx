@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuction } from '@/lib/auction-context';
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ function validatePassword(password: string): string | null {
 
 export default function SignupPage() {
   const navigate = useNavigate();
-  const { signup } = useAuction();
+  const { signup, isAuthenticated, isLoading } = useAuction();
   const [firstname, setFirstname] = useState('');
   const [lastname, setLastname] = useState('');
   const [username, setUsername] = useState('');
@@ -35,6 +35,12 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate('/browse');
+    }
+  }, [isLoading, isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuction } from '@/lib/auction-context';
-import { Auction } from '@/lib/mock-data';
+import { Auction } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import {

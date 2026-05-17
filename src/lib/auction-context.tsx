@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Auction, Bid, User } from './mock-data';
+import { Auction, Bid, User } from './types';
 import { api } from './api';
 import { toast } from 'sonner';
 
@@ -21,15 +21,23 @@ interface AuctionContextType {
   }) => Promise<boolean>;
   logout: () => void;
   placeBid: (auctionId: string, amount: number) => Promise<boolean>;
-  createAuction: (auctionData: {
-    title: string;
-    description: string;
-    category_id: string;
-    starting_price: number;
-    end_time: string;
-    images?: File[];
-  }) => Promise<boolean>;
-  getBidsForAuction: (auctionId: string) => Promise<Bid[]>;
+createAuction: (auctionData: {
+     title: string;
+     description: string;
+     category_id: string;
+     starting_price: number;
+     end_time: string;
+     images?: File[];
+   }) => Promise<boolean>;
+   updateAuction: (auctionId: string, auctionData: {
+     title: string;
+     description: string;
+     category_id: string;
+     starting_price: number;
+     end_time: string;
+     images?: File[];
+   }) => Promise<boolean>;
+   getBidsForAuction: (auctionId: string) => Promise<Bid[]>;
   getUserListings: () => Auction[];
   getUserBids: () => Promise<Bid[]>;
   getHighestBidder: (auctionId: string) => Promise<Bid | null>;
@@ -39,6 +47,13 @@ interface AuctionContextType {
 const AuctionContext = createContext<AuctionContextType | undefined>(undefined);
 
 function transformAuction(backendAuction: any): Auction {
+  const imageUrl = backendAuction.image_url || backendAuction.image || '';
+  let fullImageUrl = '';
+  if (imageUrl) {
+    fullImageUrl = imageUrl.startsWith('http') 
+      ? imageUrl 
+      : `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${imageUrl}`;
+  }
   return {
     id: String(backendAuction.id),
     title: backendAuction.title,
@@ -46,7 +61,7 @@ function transformAuction(backendAuction: any): Auction {
     category: backendAuction.category || 'Uncategorized',
     currentBid: Number(backendAuction.current_price || backendAuction.currentBid || 0),
     startingBid: Number(backendAuction.starting_price || backendAuction.startingBid || 0),
-    image: backendAuction.image_url || backendAuction.image || '',
+    image: fullImageUrl,
     seller: backendAuction.seller || '',
     sellerId: String(backendAuction.seller_id || backendAuction.sellerId || ''),
     endTime: backendAuction.end_time ? new Date(backendAuction.end_time) : new Date(),
@@ -72,7 +87,7 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
+useEffect(() => {
     const fetchProfile = async () => {
       try {
         const profile = await api.getProfile();
@@ -84,11 +99,16 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
           role: profile.role,
           avatar: profile.firstname?.charAt(0).toUpperCase() || 'U',
         });
-      } catch (error) {
-        api.removeToken();
-        setCurrentUser(null);
+      } catch (error: any) {
+        if (error.status === 401) {
+          api.removeToken();
+          setCurrentUser(null);
+        } else {
+          console.error('Failed to fetch profile:', error);
+        }
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     const fetchAuctions = async () => {
@@ -97,6 +117,8 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
         setAuctions(data.auctions.map(transformAuction));
       } catch (error) {
         console.error('Failed to fetch auctions:', error);
+        toast.error('Failed to load auctions. Please check your connection.');
+        setAuctions([]);
       }
     };
 
@@ -128,25 +150,25 @@ export function AuctionProvider({ children }: { children: ReactNode }) {
     }
   };
 
-const signup = async (data: {
-     firstname: string;
-     lastname: string;
-     username: string;
-     email: string;
-     password: string;
-     confirmpassword: string;
-     mobilenumber: string;
-   }): Promise<boolean> => {
-     try {
-       await api.signup(data);
-       toast.success('Account created successfully! Please log in.');
-       return true;
-     } catch (error: any) {
-       const errorMsg = error?.data?.error || error?.message || 'Signup failed';
-       toast.error(errorMsg);
-       return false;
-     }
-   };
+  const signup = async (data: {
+    firstname: string;
+    lastname: string;
+    username: string;
+    email: string;
+    password: string;
+    confirmpassword: string;
+    mobilenumber: string;
+  }): Promise<boolean> => {
+    try {
+      await api.signup(data);
+      toast.success('Account created successfully! Please log in.');
+      return true;
+    } catch (error: any) {
+      const errorMsg = error?.data?.error || error?.message || 'Signup failed';
+      toast.error(errorMsg);
+      return false;
+    }
+  };
 
   const logout = (): void => {
     api.removeToken();
@@ -174,49 +196,87 @@ const signup = async (data: {
     }
   };
 
-  const createAuction = async (auctionData: {
-    title: string;
-    description: string;
-    category_id: string;
-    starting_price: number;
-    end_time: string;
-    images?: File[];
-  }): Promise<boolean> => {
-    if (!currentUser) return false;
+const createAuction = async (auctionData: {
+     title: string;
+     description: string;
+     category_id: string;
+     starting_price: number;
+     end_time: string;
+     images?: File[];
+   }): Promise<boolean> => {
+     if (!currentUser) return false;
 
-    try {
-      const formData = new FormData();
-      formData.append('title', auctionData.title);
-      formData.append('description', auctionData.description);
-      formData.append('category_id', auctionData.category_id);
-      formData.append('starting_price', String(auctionData.starting_price));
-      formData.append('end_time', auctionData.end_time);
-      formData.append('bid_increment', '1.00');
+     try {
+       const formData = new FormData();
+       formData.append('title', auctionData.title);
+       formData.append('description', auctionData.description);
+       formData.append('category_id', auctionData.category_id);
+       formData.append('starting_price', String(auctionData.starting_price));
+       formData.append('end_time', auctionData.end_time);
+       formData.append('bid_increment', '1.00');
 
-      if (auctionData.images) {
-        auctionData.images.forEach((file, i) => {
-          formData.append(`images[${i}]`, file);
-        });
-      }
+       if (auctionData.images) {
+         auctionData.images.forEach((file, i) => {
+           formData.append(`images[${i}]`, file);
+         });
+       }
 
-      await api.createAuction(formData);
-      toast.success('Auction created successfully!');
-      await refreshAuctions();
-      return true;
-    } catch (error: any) {
-      toast.error(error?.data?.error || 'Failed to create auction');
-      return false;
-    }
-  };
+       await api.createAuction(formData);
+       toast.success('Auction created successfully!');
+       await refreshAuctions();
+       return true;
+     } catch (error: any) {
+       toast.error(error?.data?.error || 'Failed to create auction');
+       return false;
+     }
+   };
 
-  const getBidsForAuction = async (auctionId: string): Promise<Bid[]> => {
+   const updateAuction = async (auctionId: string, auctionData: {
+     title: string;
+     description: string;
+     category_id: string;
+     starting_price: number;
+     end_time: string;
+     images?: File[];
+   }): Promise<boolean> => {
+     if (!currentUser) return false;
+
+     try {
+       const formData = new FormData();
+       formData.append('title', auctionData.title);
+       formData.append('description', auctionData.description);
+       formData.append('category_id', auctionData.category_id);
+       formData.append('starting_price', String(auctionData.starting_price));
+       formData.append('end_time', auctionData.end_time);
+       formData.append('bid_increment', '1.00');
+       formData.append('_method', 'PUT');
+
+       if (auctionData.images) {
+         auctionData.images.forEach((file, i) => {
+           formData.append(`images[${i}]`, file);
+         });
+       }
+
+       await api.updateAuction(auctionId, formData);
+       toast.success('Auction updated successfully!');
+       await refreshAuctions();
+       return true;
+     } catch (error: any) {
+       toast.error(error?.data?.error || 'Failed to update auction');
+       return false;
+     }
+   };
+
+   const getBidsForAuction = async (auctionId: string): Promise<Bid[]> => {
     try {
       const data = await api.getAuction(auctionId);
       const transformedBids = data.bids.map(transformBid);
       setBids(prev => ({ ...prev, [auctionId]: transformedBids }));
       return transformedBids;
     } catch (error) {
-      return bids[auctionId] || [];
+      console.error('Failed to fetch bids:', error);
+      toast.error('Failed to load bid history.');
+      return [];
     }
   };
 
@@ -225,13 +285,15 @@ const signup = async (data: {
   };
 
   const getUserBids = async (): Promise<Bid[]> => {
-    const allBids: Bid[] = [];
-    for (const auctionId of Object.keys(bids)) {
-      if (bids[auctionId]) {
-        allBids.push(...bids[auctionId].filter(b => b.bidderId === currentUser?.id));
-      }
+    if (!currentUser) return [];
+
+    try {
+      const data = await api.getUserBids();
+      return data.bids.map(transformBid);
+    } catch (error) {
+      console.error('Failed to fetch user bids:', error);
+      return [];
     }
-    return allBids;
   };
 
   const getHighestBidder = async (auctionId: string): Promise<Bid | null> => {
@@ -248,30 +310,32 @@ const signup = async (data: {
       setAuctions(data.auctions.map(transformAuction));
     } catch (error) {
       console.error('Failed to refresh auctions:', error);
+      toast.error('Failed to refresh auctions.');
     }
   };
 
-  return (
-    <AuctionContext.Provider value={{
-      auctions,
-      bids,
-      currentUser,
-      isAuthenticated: !!currentUser,
-      isLoading,
-      login,
-      signup,
-      logout,
-      placeBid,
-      createAuction,
-      getBidsForAuction,
-      getUserListings,
-      getUserBids,
-      getHighestBidder,
-      refreshAuctions,
-    }}>
-      {children}
-    </AuctionContext.Provider>
-  );
+return (
+     <AuctionContext.Provider value={{
+       auctions,
+       bids,
+       currentUser,
+       isAuthenticated: !!currentUser,
+       isLoading,
+       login,
+       signup,
+       logout,
+       placeBid,
+       createAuction,
+       updateAuction,
+       getBidsForAuction,
+       getUserListings,
+       getUserBids,
+       getHighestBidder,
+       refreshAuctions,
+     }}>
+       {children}
+     </AuctionContext.Provider>
+   );
 }
 
 export function useAuction() {

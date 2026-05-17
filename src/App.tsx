@@ -9,9 +9,11 @@ import AuctionDetailPage from '@/pages/auction-detail';
 import MyListingsPage from '@/pages/my-listings';
 import MyBidsPage from '@/pages/my-bids';
 import ProfilePage from '@/pages/profile';
+import SettingsPage from '@/pages/settings';
 import AdminPage from '@/pages/admin';
 import './index.css';
 import CreateAuctionPage from './pages/create-auction';
+import EditAuctionPage from './pages/edit-auction';
 import { Toaster } from '@/components/ui/sonner';
 
 function Layout({ children }: { children: React.ReactNode }) {
@@ -39,10 +41,12 @@ function App() {
             <Route path="/auction/:id" element={<AuctionDetailPage />} />
             <Route path="/my-listings" element={<MyListingsPage />} />
             <Route path="/my-bids" element={<MyBidsPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/admin" element={<AdminPage />} />
+<Route path="/profile" element={<ProfilePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+<Route path="/admin" element={<AdminPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
             <Route path="/create-auction" element={<CreateAuctionPage />} />
+            <Route path="/edit-auction/:id" element={<EditAuctionPage />} />
           </Routes>
         </Layout>
         <Toaster />

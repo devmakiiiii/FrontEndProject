@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuction } from '@/lib/auction-context';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,8 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Auction } from '@/lib/types';
 
-const createAuctionSchema = z.object({
+const editAuctionSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
   description: z.string().min(20, 'Description must be at least 20 characters'),
   category_id: z.string().min(1, 'Please select a category'),
@@ -20,7 +21,7 @@ const createAuctionSchema = z.object({
   images: z.array(z.instanceof(File)).optional(),
 });
 
-type CreateAuctionForm = z.infer<typeof createAuctionSchema>;
+type EditAuctionForm = z.infer<typeof editAuctionSchema>;
 
 const categories = [
   { id: '1', name: 'Collectibles' },
@@ -34,19 +35,15 @@ const categories = [
   { id: '9', name: 'Sports & Hobbies' },
 ];
 
-export default function CreateAuctionPage() {
+export default function EditAuctionPage() {
   const navigate = useNavigate();
-  const { createAuction, isAuthenticated, isLoading } = useAuction();
+  const { id } = useParams<{ id: string }>();
+  const { auctions, updateAuction, isAuthenticated, isLoading } = useAuction();
+  const [auction, setAuction] = useState<Auction | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      navigate('/login');
-    }
-  }, [isLoading, isAuthenticated, navigate]);
-
-  const form = useForm<CreateAuctionForm>({
-    resolver: zodResolver(createAuctionSchema),
+  const form = useForm<EditAuctionForm>({
+    resolver: zodResolver(editAuctionSchema),
     defaultValues: {
       title: '',
       description: '',
@@ -57,10 +54,38 @@ export default function CreateAuctionPage() {
     },
   });
 
-  const onSubmit = async (data: CreateAuctionForm) => {
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate('/login');
+    }
+  }, [isLoading, isAuthenticated, navigate]);
+
+useEffect(() => {
+     if (id && auctions.length > 0) {
+       const found = auctions.find(a => a.id === id);
+       if (found) {
+         setAuction(found);
+         const endTimeValue = found.endTime instanceof Date 
+           ? found.endTime.toISOString().slice(0, 16) 
+           : new Date(found.endTime).toISOString().slice(0, 16);
+         const categoryId = categories.find(c => c.name === found.category)?.id || '';
+         form.reset({
+           title: found.title,
+           description: found.description,
+           category_id: categoryId,
+           starting_price: found.startingBid,
+           end_time: endTimeValue,
+           images: [],
+         });
+       }
+     }
+   }, [id, auctions, form]);
+
+  const onSubmit = async (data: EditAuctionForm) => {
+    if (!auction) return;
     setIsSubmitting(true);
     try {
-      const success = await createAuction({
+      const success = await updateAuction(auction.id, {
         title: data.title,
         description: data.description,
         category_id: data.category_id,
@@ -72,17 +97,31 @@ export default function CreateAuctionPage() {
         navigate('/my-listings');
       }
     } catch (error) {
-      console.error('Failed to create auction:', error);
+      console.error('Failed to update auction:', error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  if (!auction) {
+    return (
+      <main className="max-w-4xl mx-auto px-4 py-12">
+        <div className="text-center">
+          <p className="text-muted-foreground">Auction not found or loading...</p>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="max-w-4xl mx-auto px-4 py-12">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Create New Auction</h1>
-        <p className="text-muted-foreground mt-2">List your item for auction</p>
+        <h1 className="text-3xl font-bold">Edit Auction</h1>
+        <p className="text-muted-foreground mt-2">Update your auction listing</p>
       </div>
 
       <Card className="p-6">
@@ -151,20 +190,20 @@ export default function CreateAuctionPage() {
                   <FormItem>
                     <FormLabel>Starting Price ($)</FormLabel>
                     <FormControl>
-<Input
-                         type="number"
-                         min="1"
-                         step="0.01"
-                         placeholder="100.00"
-                         {...field}
-                         onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                       />
+                      <Input
+                        type="number"
+                        min="1"
+                        step="0.01"
+                        placeholder="100.00"
+                        {...field}
+                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-</div>
+            </div>
 
             <FormField
               control={form.control}
@@ -183,12 +222,25 @@ export default function CreateAuctionPage() {
               )}
             />
 
+            {auction?.image && (
+              <div>
+                <FormLabel>Current Image</FormLabel>
+                <div className="mt-2">
+                  <img
+                    src={auction.image}
+                    alt={auction.title}
+                    className="max-h-48 rounded-lg border object-cover"
+                  />
+                </div>
+              </div>
+            )}
+
             <FormField
               control={form.control}
               name="images"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Images</FormLabel>
+                  <FormLabel>Images (optional - new images will replace existing)</FormLabel>
                   <FormControl>
                     <Input
                       type="file"
@@ -204,7 +256,7 @@ export default function CreateAuctionPage() {
 
             <div className="flex gap-4">
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Creating...' : 'Create Auction'}
+                {isSubmitting ? 'Updating...' : 'Update Auction'}
               </Button>
               <Button type="button" variant="outline" onClick={() => navigate('/my-listings')}>
                 Cancel

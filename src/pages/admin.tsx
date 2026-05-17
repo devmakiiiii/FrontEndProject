@@ -20,11 +20,11 @@ interface AdminUser {
 
 export default function AdminPage() {
   const navigate = useNavigate();
-  const { currentUser, isAuthenticated, auctions } = useAuction();
+  const { currentUser, isAuthenticated, isLoading, auctions } = useAuction();
   const [users, setUsers] = useState<AdminUser[]>([]);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       navigate('/login');
       return;
     }
@@ -33,7 +33,7 @@ export default function AdminPage() {
       return;
     }
     fetchUsers();
-  }, [isAuthenticated, currentUser, navigate]);
+  }, [isLoading, isAuthenticated, currentUser, navigate]);
 
 const fetchUsers = async () => {
     try {

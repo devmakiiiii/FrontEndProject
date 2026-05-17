@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuction } from '@/lib/auction-context';
 import { Button } from '@/components/ui/button';
@@ -6,11 +6,17 @@ import { Card } from '@/components/ui/card';
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuction();
+  const { login, isAuthenticated, isLoading } = useAuction();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate('/browse');
+    }
+  }, [isLoading, isAuthenticated, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

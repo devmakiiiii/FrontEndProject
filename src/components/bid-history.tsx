@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuction } from '@/lib/auction-context';
-import { Bid } from '@/lib/mock-data';
+import { Bid } from '@/lib/types';
 import { Card } from '@/components/ui/card';
 
 interface BidHistoryProps {

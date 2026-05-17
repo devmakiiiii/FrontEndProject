@@ -61,7 +61,7 @@ export const api = {
   getToken,
 
   login: (username: string, password: string) =>
-    request<{ token: string }>('/api/login', {
+    request<{ token: string }>('/api/auth/login', {
       method: 'POST',
       body: { username, password } as any,
     }),
@@ -75,7 +75,7 @@ export const api = {
     confirmpassword: string;
     mobilenumber: string;
   }) =>
-    request<{ message: string }>('/api/signup', {
+    request<{ message: string }>('/api/auth/register', {
       method: 'POST',
       body: data as any,
     }),
@@ -90,7 +90,7 @@ export const api = {
       lastname: string;
       email: string;
       role: string;
-    }>('/api/user/profile'),
+    }>('/api/users/profile'),
 
   getAuctions: (params?: Record<string, string>) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';
@@ -124,6 +124,15 @@ export const api = {
     request<{ message: string }>(`/api/admin/close-auction/${auctionId}`, {
       method: 'POST',
     }),
+
+updateAuction: (auctionId: string, data: FormData) =>
+     request<{ message: string }>(`/api/auction/${auctionId}`, {
+       method: 'PUT',
+       body: data,
+     }),
+
+  getUserBids: () =>
+     request<{ bids: any[] }>('/api/user/bids'),
 };
 
 export type { ApiError };

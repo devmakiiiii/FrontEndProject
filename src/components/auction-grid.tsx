@@ -1,4 +1,4 @@
-import { Auction } from '@/lib/mock-data';
+import { Auction } from '@/lib/types';
 import { AuctionCard } from './auction-card';
 
 interface AuctionGridProps {

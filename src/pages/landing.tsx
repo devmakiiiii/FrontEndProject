@@ -1,7 +1,13 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useAuction } from '@/lib/auction-context';
 
 export default function LandingPage() {
+  const { isAuthenticated } = useAuction();
+
+  if (isAuthenticated) {
+    return <Navigate to="/browse" replace />;
+  }
   return (
     <>
       <nav className="sticky top-0 z-50 bg-background border-b border-border">
