@@ -101,7 +101,7 @@ export const api = {
     request<{ auction: any; bids: any[] }>(`/api/auction/${id}`),
 
   createAuction: (data: FormData) =>
-    request<{ message: string }>('/api/auction', {
+    request<{ message: string; auction?: any }>('/api/auction', {
       method: 'POST',
       body: data,
     }),
@@ -126,13 +126,18 @@ export const api = {
     }),
 
 updateAuction: (auctionId: string, data: FormData) =>
-     request<{ message: string }>(`/api/auction/${auctionId}`, {
-       method: 'PUT',
-       body: data,
-     }),
+      request<{ message: string; auction?: any }>(`/api/auction/${auctionId}`, {
+        method: 'PUT',
+        body: data,
+      }),
 
-  getUserBids: () =>
-     request<{ bids: any[] }>('/api/user/bids'),
+getUserBids: () =>
+      request<{ bids: any[] }>('/api/user/bids'),
+
+  deleteAuction: (auctionId: string) =>
+    request<{ message: string }>(`/api/auction/${auctionId}`, {
+      method: 'DELETE',
+    }),
 };
 
 export type { ApiError };

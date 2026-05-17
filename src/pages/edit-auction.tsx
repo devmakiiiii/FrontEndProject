@@ -24,15 +24,14 @@ const editAuctionSchema = z.object({
 type EditAuctionForm = z.infer<typeof editAuctionSchema>;
 
 const categories = [
-  { id: '1', name: 'Collectibles' },
-  { id: '2', name: 'Jewelry & Watches' },
-  { id: '3', name: 'Furniture' },
-  { id: '4', name: 'Books & Media' },
-  { id: '5', name: 'Music & Audio' },
-  { id: '6', name: 'Fashion & Accessories' },
-  { id: '7', name: 'Electronics' },
-  { id: '8', name: 'Art & Antiques' },
-  { id: '9', name: 'Sports & Hobbies' },
+  { id: '1', name: 'Electronics' },
+  { id: '2', name: 'Fashion' },
+  { id: '3', name: 'Home & Garden' },
+  { id: '4', name: 'Sports' },
+  { id: '5', name: 'Collectibles' },
+  { id: '6', name: 'Art' },
+  { id: '7', name: 'Vehicles' },
+  { id: '8', name: 'Books' },
 ];
 
 export default function EditAuctionPage() {
