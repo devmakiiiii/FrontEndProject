@@ -46,15 +46,15 @@ export default function AuctionDetailPage() {
       <div key={refreshKey} className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Image Section */}
         <div className="lg:col-span-1 space-y-4">
-<Card className="overflow-hidden">
-<img
-                src={auction.image || 'https://placehold.co/600x600?text=No+Image'}
-                alt={auction.title}
-                className="w-full aspect-square object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = 'https://placehold.co/600x600?text=No+Image';
-                }}
-              />
+          <Card className="overflow-hidden">
+            <img
+              src={auction.image || 'https://placehold.co/600x600?text=No+Image'}
+              alt={auction.title}
+              className="w-full aspect-square object-cover"
+              onError={(e) => {
+                e.currentTarget.src = 'https://placehold.co/600x600?text=No+Image';
+              }}
+            />
           </Card>
 
           {/* Status */}
@@ -106,16 +106,20 @@ export default function AuctionDetailPage() {
           {/* Seller Information */}
           <Card className="p-6">
             <p className="text-sm text-muted-foreground mb-2">Seller</p>
-            <p className="text-lg font-semibold">{auction.seller}</p>
+            <p className="text-lg font-semibold">
+              {(auction.sellerFirstname?.trim() || auction.sellerLastname?.trim())
+                ? `${auction.sellerFirstname} ${auction.sellerLastname}`.trim()
+                : auction.sellerId || 'Unknown Seller'}
+            </p>
           </Card>
 
           {/* Bid Form */}
-{auction.status === 'active' && !isEnded && currentUser?.id !== auction.sellerId && (
-    <BidForm
-      auction={auction}
-      onBidSuccess={() => setRefreshKey(prev => prev + 1)}
-    />
-  )}
+          {auction.status === 'active' && !isEnded && currentUser?.id !== auction.sellerId && (
+            <BidForm
+              auction={auction}
+              onBidSuccess={() => setRefreshKey(prev => prev + 1)}
+            />
+          )}
 
           {/* Bid History */}
           <BidHistory auctionId={auction.id} />

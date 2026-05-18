@@ -48,48 +48,48 @@ logout: () => void;
 const AuctionContext = createContext<AuctionContextType | undefined>(undefined);
 
 function transformAuction(backendAuction: any): Auction {
-   let imageUrl = null;
-   
-   // Debug logging - remove in production
-   console.log('transformAuction - raw image_url:', backendAuction.image_url, 'images:', backendAuction.images);
-   
-   if (backendAuction.images && Array.isArray(backendAuction.images) && backendAuction.images.length > 0) {
-     const firstImage = backendAuction.images[0];
-     if (typeof firstImage === 'string') {
-       imageUrl = firstImage;
-     } else if (firstImage && typeof firstImage === 'object') {
-       imageUrl = firstImage.url || firstImage.path || firstImage.image_url || null;
-     }
-   } else if (backendAuction.image_url) {
-     imageUrl = backendAuction.image_url;
-   } else if (backendAuction.image) {
-     imageUrl = backendAuction.image;
-   }
-   
-   let fullImageUrl = '';
-   if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '') {
-     fullImageUrl = imageUrl.startsWith('http')
-       ? imageUrl
-       : `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
-   }
-   
-   console.log('transformAuction - imageUrl:', imageUrl, '-> fullImageUrl:', fullImageUrl);
-   
-   // Additional validation: check if the returned image_url might be JSON string
-   if (typeof backendAuction.image_url === 'string' && backendAuction.image_url.startsWith('[')) {
-     console.warn('image_url column contains JSON array, attempting to parse:', backendAuction.image_url);
-     try {
-       const parsed = JSON.parse(backendAuction.image_url);
-       if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
-         const fixedUrl = parsed[0];
-         fullImageUrl = fixedUrl.startsWith('http') ? fixedUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${fixedUrl.startsWith('/') ? '' : '/'}${fixedUrl}`;
-         console.log('Fixed fullImageUrl from JSON in image_url:', fullImageUrl);
-       }
-     } catch (e) {
-       console.error('Failed to parse image_url as JSON:', e);
-     }
-   }
-  
+  let imageUrl = null;
+
+  // Debug logging - remove in production
+  console.log('transformAuction - raw image_url:', backendAuction.image_url, 'images:', backendAuction.images);
+
+  if (backendAuction.images && Array.isArray(backendAuction.images) && backendAuction.images.length > 0) {
+    const firstImage = backendAuction.images[0];
+    if (typeof firstImage === 'string') {
+      imageUrl = firstImage;
+    } else if (firstImage && typeof firstImage === 'object') {
+      imageUrl = firstImage.url || firstImage.path || firstImage.image_url || null;
+    }
+  } else if (backendAuction.image_url) {
+    imageUrl = backendAuction.image_url;
+  } else if (backendAuction.image) {
+    imageUrl = backendAuction.image;
+  }
+
+  let fullImageUrl = '';
+  if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '') {
+    fullImageUrl = imageUrl.startsWith('http')
+      ? imageUrl
+      : `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+  }
+
+  console.log('transformAuction - imageUrl:', imageUrl, '-> fullImageUrl:', fullImageUrl);
+
+  // Additional validation: check if the returned image_url might be JSON string
+  if (typeof backendAuction.image_url === 'string' && backendAuction.image_url.startsWith('[')) {
+    console.warn('image_url column contains JSON array, attempting to parse:', backendAuction.image_url);
+    try {
+      const parsed = JSON.parse(backendAuction.image_url);
+      if (Array.isArray(parsed) && parsed.length > 0 && typeof parsed[0] === 'string') {
+        const fixedUrl = parsed[0];
+        fullImageUrl = fixedUrl.startsWith('http') ? fixedUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${fixedUrl.startsWith('/') ? '' : '/'}${fixedUrl}`;
+        console.log('Fixed fullImageUrl from JSON in image_url:', fullImageUrl);
+      }
+    } catch (e) {
+      console.error('Failed to parse image_url as JSON:', e);
+    }
+  }
+
   return {
     id: String(backendAuction.id),
     title: backendAuction.title,
@@ -98,7 +98,8 @@ function transformAuction(backendAuction: any): Auction {
     currentBid: Number(backendAuction.current_price || backendAuction.currentBid || 0),
     startingBid: Number(backendAuction.starting_price || backendAuction.startingBid || 0),
     image: fullImageUrl,
-    seller: backendAuction.seller || '',
+    sellerFirstname: backendAuction.seller?.firstname || backendAuction.firstname || backendAuction.seller_firstname || '',
+    sellerLastname: backendAuction.seller?.lastname || backendAuction.lastname || backendAuction.seller_lastname || '',
     sellerId: String(backendAuction.seller_id || backendAuction.sellerId || ''),
     endTime: backendAuction.end_time ? new Date(backendAuction.end_time) : new Date(),
     status: backendAuction.status || 'active',

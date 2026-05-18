@@ -6,7 +6,8 @@ export interface Auction {
   currentBid: number;
   startingBid: number;
   image: string;
-  seller: string;
+  sellerFirstname: string;
+  sellerLastname: string;
   sellerId: string;
   endTime: Date;
   status: 'active' | 'ended' | 'sold' | 'pending';
