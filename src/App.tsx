@@ -11,6 +11,7 @@ import MyBidsPage from '@/pages/my-bids';
 import ProfilePage from '@/pages/profile';
 import SettingsPage from '@/pages/settings';
 import AdminPage from '@/pages/admin';
+import PaymentPage from '@/pages/payment';
 import './index.css';
 import CreateAuctionPage from './pages/create-auction';
 import EditAuctionPage from './pages/edit-auction';
@@ -45,9 +46,10 @@ function App() {
             <Route path="/settings" element={<SettingsPage />} />
 <Route path="/admin" element={<AdminPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
-            <Route path="/create-auction" element={<CreateAuctionPage />} />
-            <Route path="/edit-auction/:id" element={<EditAuctionPage />} />
-          </Routes>
+<Route path="/create-auction" element={<CreateAuctionPage />} />
+             <Route path="/edit-auction/:id" element={<EditAuctionPage />} />
+             <Route path="/payment/:id" element={<PaymentPage />} />
+           </Routes>
         </Layout>
         <Toaster />
       </AuctionProvider>

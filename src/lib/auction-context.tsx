@@ -104,6 +104,8 @@ function transformAuction(backendAuction: any): Auction {
     endTime: backendAuction.end_time ? new Date(backendAuction.end_time) : new Date(),
     status: backendAuction.status || 'active',
     bidCount: backendAuction.bidCount || 0,
+    winningBidderId: backendAuction.winning_bidder_id || backendAuction.winningBidderId || undefined,
+    paymentStatus: backendAuction.payment_status || backendAuction.paymentStatus || undefined,
   };
 }
 
@@ -331,12 +333,11 @@ const updateAuction = async (auctionId: string, auctionData: {
    const getBidsForAuction = async (auctionId: string): Promise<Bid[]> => {
     try {
       const data = await api.getAuction(auctionId);
-      const transformedBids = data.bids.map(transformBid);
+      const transformedBids = data.bids?.map(transformBid) || [];
       setBids(prev => ({ ...prev, [auctionId]: transformedBids }));
       return transformedBids;
     } catch (error) {
       console.error('Failed to fetch bids:', error);
-      toast.error('Failed to load bid history.');
       return [];
     }
   };

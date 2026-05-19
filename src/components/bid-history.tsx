@@ -10,10 +10,16 @@ interface BidHistoryProps {
 export function BidHistory({ auctionId }: BidHistoryProps) {
   const { getBidsForAuction } = useAuction();
   const [bids, setBids] = useState<Bid[]>([]);
+  const [loading, setLoading] = useState(true);
   const sortedBids = [...bids].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
   useEffect(() => {
-    getBidsForAuction(auctionId).then(setBids);
+    getBidsForAuction(auctionId)
+      .then(setBids)
+      .catch((error) => {
+        console.error('Failed to fetch bids:', error);
+      })
+      .finally(() => setLoading(false));
   }, [auctionId, getBidsForAuction]);
 
   const formatTime = (date: Date) => {
@@ -31,6 +37,15 @@ export function BidHistory({ auctionId }: BidHistoryProps) {
     const days = Math.floor(hours / 24);
     return `${days}d ago`;
   };
+
+  if (loading) {
+    return (
+      <Card className="p-6">
+        <h3 className="font-semibold mb-4">Bid History</h3>
+        <p className="text-sm text-muted-foreground">Loading bids...</p>
+      </Card>
+    );
+  }
 
   if (sortedBids.length === 0) {
     return (

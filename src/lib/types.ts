@@ -12,6 +12,8 @@ export interface Auction {
   endTime: Date;
   status: 'active' | 'ended' | 'sold' | 'pending';
   bidCount: number;
+  winningBidderId?: string;
+  paymentStatus?: 'pending' | 'paid' | 'failed';
 }
 
 export interface Bid {

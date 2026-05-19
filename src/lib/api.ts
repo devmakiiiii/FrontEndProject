@@ -132,11 +132,21 @@ updateAuction: (auctionId: string, data: FormData) =>
       }),
 
 getUserBids: () =>
-      request<{ bids: any[] }>('/api/user/bids'),
+    request<{ bids: any[] }>('/api/user/bids'),
 
   deleteAuction: (auctionId: string) =>
     request<{ message: string }>(`/api/auction/${auctionId}`, {
       method: 'DELETE',
+    }),
+
+  createPaymentIntent: (auctionId: string) =>
+    request<{ client_secret: string }>(`/api/payment/intent/${auctionId}`, {
+      method: 'POST',
+    }),
+
+  confirmPayment: (auctionId: string) =>
+    request<{ message: string }>(`/api/payment/confirm/${auctionId}`, {
+      method: 'POST',
     }),
 };
 
